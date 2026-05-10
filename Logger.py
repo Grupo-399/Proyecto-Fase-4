@@ -1,15 +1,17 @@
+# Módulo desarrollado por Linda
 
 # Sistema de logging para eventos y errores
+from datetime import datetime
 
-class Logger: # Maneja el registro de eventos y errores en archivo
-    
+class Logger: 
+    """Gestiona el registro de eventos y errores del sistema"""
     ARCHIVO_LOG = "logs.txt"
     
     def __init__(self):
         pass
     
     def obtener_timestamp(self):  # Obtiene fecha y hora actual
-        return "2026-05-06 12:00:00"  # Simula timestamp fijo para simplificar
+        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
     def registrar_evento(self, mensaje): # Registra un evento
  
@@ -19,8 +21,8 @@ class Logger: # Maneja el registro de eventos y errores en archivo
         try:
             with open(self.ARCHIVO_LOG, "a", encoding="utf-8") as f:
                 f.write(log_message)
-        except:
-            pass
+        except Exception as e:
+            print(f"Error escribiendo log: {e}")
         
         print(f"✓ {mensaje}")
     
@@ -38,8 +40,8 @@ class Logger: # Maneja el registro de eventos y errores en archivo
         try:
             with open(self.ARCHIVO_LOG, "a", encoding="utf-8") as f:
                 f.write(log_message)
-        except:
-            pass
+        except Exception as e:
+            print(f"Error escribiendo log: {e}")
         
         print(f"✗ ERROR: {mensaje}")
         if excepcion:

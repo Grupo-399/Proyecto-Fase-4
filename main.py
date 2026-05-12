@@ -1,59 +1,84 @@
-from Cliente import Cliente
-from Servicios import ReservaSalas, AlquilerEquipos, AsesoriaEspecializada
+import datetime
+from cliente import Cliente
+from servicios import ReservaSalas, AlquilerEquipos, AsesoriaEspecializada
+from Reserva import Reserva
 from Excepciones import SoftwareFJException
-import time
+from Logger import logger
 
-def ejecutar_panel_simulacion():
-    # 1. Preparación de servicios (Fase 3: Objetos de subclases)
-    sala_conferencias = ReservaSalas("Sala Diamante", 50000)
-    lote_laptops = AlquilerEquipos("Lote MacBook Pro", 120000)
-    consultoria_it = AsesoriaEspecializada("Asesoría de Ciberseguridad", 300000)
+def ejecutar_sistema():
+    """
+    Función principal que integra todos los módulos del sistema.
+    Demuestra el flujo de trabajo entre Clientes, Servicios y Reservas.
+    """
+    print("\n" + "="*50)
+    print("      SOFTWARE FJ - SISTEMA INTEGRADO (FASE 4)")
+    print("="*50)
+    
+    # INSTANCIACIÓN: Creación de objetos de servicio
+    sala = ReservaSalas("Sala Diamante", 50000)
+    equipos = AlquilerEquipos("Laptop Gamer", 80000)
+    asesoria = AsesoriaEspecializada("Consultoría IT", 120000)
+    
+    exitosos = []
 
-    # 2. Matriz de 10 simulaciones (Fase 4: Robustez)
-    # Formato: (Tipo, ID, Nombre, Email, ObjetoServicio, Cantidad, ParamEspecial)
-    pruebas = [
-        ("Válido", "1020", "Ana Gomez", "ana@u.edu.co", sala_conferencias, 4, True),
-        ("Error ID", "ID_MALO", "Juan", "j@u.co", sala_conferencias, 2, False),
-        ("Error Email", "1021", "Pedro", "pedro_sin_punto@com", lote_laptops, 10, True),
-        ("Válido", "1022", "Marta Ruiz", "marta.r@u.co", lote_laptops, 8, True),
-        ("Error Horas", "1023", "Luis", "luis@u.com", sala_conferencias, 24, False),
-        ("Válido", "1024", "Sonia K.", "sonia@unad.edu.co", consultoria_it, 2, True),
-        ("Error Días", "1025", "Carlos", "c@u.co", lote_laptops, 0, False),
-        ("Válido", "1026", "Rosa Maria", "rosa.m@gmail.com", sala_conferencias, 1, False),
-        ("Válido", "1027", "Hugo Diaz", "hugo@outlook.com", consultoria_it, 1, False),
-        ("Error Vacío", "1028", "", "vacio@u.co", lote_laptops, 5, True)
-    ]
+    # BLOQUE DE PRUEBA AUTOMÁTICA: Para demostrar robustez ante el tutor
+    print("\n>>> EJECUTANDO SIMULACIÓN DE VALIDACIÓN...")
+    try:
+        # Se intenta crear una reserva válida para probar la conexión de módulos
+        c_test = Cliente("1010", "Lizeth Rodriguez", "lizeth@unad.edu.co")
+        res_test = Reserva(c_test, sala, "2026-05-20 09:00", 3)
+        if res_test.confirmar():
+            exitosos.append(f"Prueba Sistema: OK - Cliente {c_test.nombre}")
+    except SoftwareFJException as e:
+        print(f"Aviso de validación: {e}")
 
-    print("="*60)
-    print("SISTEMA INTEGRAL DE GESTIÓN SOFTWARE FJ - PRÁCTICA SIMULADA")
-    print("="*60)
-
-    for i, (tag, id_c, nom, mail, serv_obj, cant, extra) in enumerate(pruebas, 1):
-        print(f"\n[INTENTO #{i}] Escenario: {tag}")
+    # BLOQUE MANUAL: Gestión de 10 registros solicitados
+    print("\n" + "!"*40)
+    print(" PANEL DE CONTROL - INGRESO DE DATOS")
+    print("!"*40)
+    
+    contador = 0
+    while contador < 10:
+        print(f"\n--- Registro de Servicio {contador + 1} de 10 ---")
+        id_u = input("Cédula/ID (o escriba 'fin' para finalizar): ")
+        if id_u.lower() == 'fin': break
+        
         try:
-            # PROCESO: Cliente -> Cálculo -> Log
-            # Aquí se aplican las validaciones de Cliente.py
-            nuevo_cliente = Cliente(id_c, nom, mail)
+            # Captura de datos
+            nom = input("Nombre completo: ")
+            mail = input("Correo institucional: ")
+            print("1. Salas | 2. Equipos | 3. Asesorías")
+            op = input("Seleccione tipo de servicio: ")
             
-            # Aquí se aplica el polimorfismo de Servicios.py
-            total_factura = serv_obj.calcular_costo(cant, extra)
+            # Selección dinámica de objeto (Polimorfismo en acción)
+            serv_sel = sala if op == '1' else equipos if op == '2' else asesoria
+            cant = float(input("Cantidad (Unidades/Tiempo): "))
             
-            print(f">> PROCESADO: {nuevo_cliente.nombre} ha contratado {serv_obj._nombre}")
-            print(f">> TOTAL A PAGAR (IVA Incluido): ${total_factura:,}")
+            # INTEGRACIÓN: Conexión de todos los archivos .py
+            obj_cliente = Cliente(id_u, nom, mail)
+            nueva_reserva = Reserva(obj_cliente, serv_sel, "2026-05-25 08:00", cant)
             
+            # El método confirmar dispara el cálculo de costos polimórfico
+            if nueva_reserva.confirmar():
+                print(f"✓ Éxito: Reserva procesada por ${nueva_reserva.get_costo_total()}")
+                exitosos.append(f"Registro: {nom} - {serv_sel._nombre}")
+                contador += 1
+        
         except SoftwareFJException as e:
-            # Captura de excepciones personalizadas de tu compañera
-            print(f">> ESTADO: Error controlado capturado por el sistema.")
+            # Atrapa errores de lógica de negocio (Excepciones de Linda)
+            print(f"✗ Error de Validación: {e}")
         except Exception as e:
-            # Captura de cualquier otro error para que el programa no se detenga
-            print(f">> ALERTA: Error inesperado de Python atrapado.")
-        finally:
-            print(f">> Simulación {i} finalizada satisfactoriamente.")
-            time.sleep(0.1) # Simulación de tiempo de procesamiento
+            # Atrapa errores técnicos inesperados
+            print(f"✗ Error Técnico: {e}")
 
-    print("\n" + "="*60)
-    print("TODAS LAS SIMULACIONES HAN CONCLUIDO - REVISE logs.txt")
-    print("="*60)
+    # CIERRE DE SISTEMA: Resumen de transacciones
+    print("\n" + "═"*50)
+    print(f"   LOG DE OPERACIONES FINALIZADO - {datetime.datetime.now().strftime('%d/%m/%Y')}")
+    print("═"*50)
+    for registro in exitosos:
+        print(f" • {registro}")
+    print(f"\nREGISTROS TOTALES EN LOGS.TXT: {len(exitosos)}")
+    print("═"*50)
 
 if __name__ == "__main__":
-    ejecutar_panel_simulacion() 
+    ejecutar_sistema()

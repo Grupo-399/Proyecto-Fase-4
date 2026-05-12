@@ -14,7 +14,8 @@ Actividad colaborativa componente práctico - prácticas simuladas
   - Servicios
 
 - Andres Alvarado:
-  - Sin aportes
+  - Simulaciones
+  - Validador
 
 - Brayan Obando:
   - Sin aportes
